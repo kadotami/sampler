@@ -83,7 +83,10 @@ class _AudioButtonState extends State<audioButton> {
       appDocDirectory = await getExternalStorageDirectory();
     }
     audioFilePath = appDocDirectory.path + audioFilePath + widget.trackNum;
-    _isExsistFile = await fileExists();
+    bool fileExist = await fileExists();
+    setState(() {
+      this._isExsistFile = fileExist;
+    });
   }
 
   @override
@@ -92,72 +95,75 @@ class _AudioButtonState extends State<audioButton> {
   }
 
   Widget createWidget() {
-    if (_isExsistFile && _isRecording) {
+    if (_isExsistFile) {
       return new GestureDetector(
-          onTapUp: (TapUpDetails details) {
-            _stopRecord();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: <Color>[
-                  Colors.blue[300],
-                  Colors.blue[500],
-                  Colors.blue[700],
-                ],
-              ),
+        onTapDown: (TapDownDetails details) {
+          _play();
+        },
+        onTapUp: (TapUpDetails details) {
+          _stopPlay();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: <Color>[
+                Colors.orange[300],
+                Colors.orange[500],
+                Colors.orange[700],
+              ],
             ),
-            padding: const EdgeInsets.all(10.0),
-            child: const Text(
-              'Recording...',
-              style: TextStyle(color: Colors.white),
-            ),
-          ));
-    } else if (_isExsistFile) {
+          ),
+          padding: const EdgeInsets.all(10.0),
+          child: const Text(
+            'Play',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    } else if (_isRecording) {
       return new GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            _play();
-          },
-          onTapUp: (TapUpDetails details) {
-            _stopPlay();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: <Color>[
-                  Colors.orange[300],
-                  Colors.orange[500],
-                  Colors.orange[700],
-                ],
-              ),
+        onTapUp: (TapUpDetails details) {
+          _stopRecord();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: <Color>[
+                Colors.blue[300],
+                Colors.blue[500],
+                Colors.blue[700],
+              ],
             ),
-            padding: const EdgeInsets.all(10.0),
-            child: const Text(
-              'Play',
-              style: TextStyle(color: Colors.white),
-            ),
-          ));
+          ),
+          padding: const EdgeInsets.all(10.0),
+          child: const Text(
+            'Recording...',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
     } else {
       return new GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            _record();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: <Color>[
-                  Colors.blue[300],
-                  Colors.blue[500],
-                  Colors.blue[700],
-                ],
-              ),
+        onTapDown: (TapDownDetails details) {
+          _record();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: <Color>[
+                Colors.blue[300],
+                Colors.blue[500],
+                Colors.blue[700],
+              ],
             ),
-            padding: const EdgeInsets.all(10.0),
-            child: const Text(
-              'Record',
-              style: TextStyle(color: Colors.white),
-            ),
-          ));
+          ),
+          padding: const EdgeInsets.all(10.0),
+          child: const Text(
+            'Record',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
     }
   }
 
@@ -166,20 +172,29 @@ class _AudioButtonState extends State<audioButton> {
   }
 
   _record() async {
-    String path = await recorderModule.startRecorder(
-      uri: audioFilePath,
-      codec: t_CODEC.CODEC_AAC,
-    );
-    print('startRecorder: $path');
-    this.setState(() {
-      this._isRecording = true;
-    });
+    try {
+      String path = await recorderModule.startRecorder(
+        uri: audioFilePath,
+        codec: t_CODEC.CODEC_AAC,
+      );
+      print('startRecorder: $path');
+      this.setState(() {
+        this._isRecording = true;
+      });
+    } catch (err) {
+      print('startRecorder error: $err');
+      setState(() {
+        _stopRecord();
+        this._isRecording = false;
+      });
+    }
   }
 
   _stopRecord() async {
     String result = await recorderModule.stopRecorder();
     print('stopRecorder: $result');
     this.setState(() {
+      this._isExsistFile = true;
       this._isRecording = false;
     });
   }
