@@ -100,9 +100,9 @@ class _AudioButtonState extends State<audioButton> {
         onTapDown: (TapDownDetails details) {
           _play();
         },
-        onTapUp: (TapUpDetails details) {
-          _stopPlay();
-        },
+//        onTapUp: (TapUpDetails details) {
+//          _stopPlay();
+//        },
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -114,9 +114,20 @@ class _AudioButtonState extends State<audioButton> {
             ),
           ),
           padding: const EdgeInsets.all(10.0),
-          child: const Text(
-            'Play',
-            style: TextStyle(color: Colors.white),
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            children: <Widget>[
+              const Text(
+                'Play',
+                style: TextStyle(color: Colors.white),
+              ),
+              Icon(
+                Icons.favorite,
+                color: Colors.pink,
+                size: 24.0,
+                semanticLabel: 'Text to announce in accessibility modes',
+              ),
+            ],
           ),
         ),
       );
